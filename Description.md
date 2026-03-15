@@ -1,3 +1,11 @@
+# KawaiiEmoji Web App Design and Structure (English Summary)
+
+> Style: anime / kawaii — bright accent colors, rounded corners, playful typography, soft shadows, and micro-animations.
+
+_English summary above; detailed description continues in Russian below._
+
+---
+
 # Дизайн и структура веб-приложения KawaiiEmoji
 
 > Стиль: аниме/кавай — яркие акцентные цвета, скруглённые углы, игривая типографика, лёгкие тени и микро-анимации.
