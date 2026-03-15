@@ -82,8 +82,10 @@ CREATE TABLE emojis (
 );
 
 -- Seed data
+-- NOTE: Store only securely hashed passwords here (e.g., bcrypt/argon2).
+-- The hash below is a dummy example and must be replaced/managed by the app.
 INSERT INTO users (username, email, password) VALUES
-    ('kawaii_admin', 'admin@kawaiiemoji.dev', 'hashed_pw');
+    ('kawaii_admin', 'admin@kawaiiemoji.dev', '$2b$12$EXAMPLEDUMMYHASHSTRINGFORSEEDUSERxxxxxxxxxxxxxxx');
 
 INSERT INTO emojis (symbol, name, category, tags, user_id) VALUES
     ('(づ｡◕‿‿◕｡)づ', 'Big Hug',     'kawaii', 'hug,cute,love',  1),
