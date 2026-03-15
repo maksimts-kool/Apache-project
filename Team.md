@@ -197,7 +197,7 @@ Log files mounted to host: ./logs/
 ```bash
 # Clone and enter project
 git clone <repo-url>
-cd project
+cd <repo-name>
 
 # Start all services
 docker compose up -d
