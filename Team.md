@@ -215,7 +215,7 @@ tail -f logs/apache_error.log
 tail -f logs/mysql.log
 
 # Run a quick DB check
-docker compose exec db mysql -u kawaii_user -p kawaiiemoji_db \
+docker compose exec db mysql -u <MYSQL_USER> -p kawaiiemoji_db \
   -e "SELECT name, category, downloads FROM emojis;"
 
 # Stop all services
