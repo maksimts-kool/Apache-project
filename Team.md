@@ -163,16 +163,18 @@ INSERT INTO emojis (symbol, name, category, tags, user_id) VALUES
   Browser
      │  HTTP :80
      ▼
-┌─────────────┐        ┌─────────────┐
-│  Apache /   │──PHP──▶│  PHP App    │
-│  nginx      │        │  (app/)     │
-│  :80        │        └──────┬──────┘
-└─────────────┘               │ MySQL :3306
-                               ▼
-                      ┌─────────────────┐
-                      │  MySQL/MariaDB  │
-                      │  kawaiiemoji_db │
-                      └─────────────────┘
+┌───────────────────────────┐
+│  Apache / nginx + PHP     │
+│  (app/ code, mod_php or   │
+│   php-fpm inside container)│
+│  :80                      │
+└─────────────┬─────────────┘
+              │ MySQL :3306
+              ▼
+      ┌─────────────────┐
+      │  MySQL/MariaDB  │
+      │  kawaiiemoji_db │
+      └─────────────────┘
 
 All services on internal Docker network: kawaii-net
 Log files mounted to host: ./logs/
