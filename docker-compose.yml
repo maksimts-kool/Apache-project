@@ -11,24 +11,22 @@ services:
     networks:
       - kawaii-net
     restart: unless-stopped
-    # depends_on:
-    #   - db
-    # Uncomment depends_on once the db service is added by Timur
+    depends_on:
+      - db
 
-  # db:
-  #   Service will be added by DB Admin (Timur)
-  #   image: mysql:8.0 or mariadb:10
-  #   container_name: kawaii-db
-  #   environment:
-  #     MYSQL_ROOT_PASSWORD: ...
-  #     MYSQL_DATABASE: kawaiiemoji_db
-  #     MYSQL_USER: ...
-  #     MYSQL_PASSWORD: ...
-  #   volumes:
-  #     - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
-  #     - ./logs/mysql.log:/var/log/mysql/mysql.log
-  #   networks:
-  #     - kawaii-net
+  db:
+    image: mysql:8.0
+    container_name: kawaii-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password_123
+      MYSQL_DATABASE: kawaiiemoji_db
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./logs/mysql.log:/var/log/mysql/mysql.log
+    networks:
+      - kawaii-net
+    command: --general-log=1 --general-log-file=/var/log/mysql/mysql.log
+    restart: unless-stopped
 
 networks:
   kawaii-net:
