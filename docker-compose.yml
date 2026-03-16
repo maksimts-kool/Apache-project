@@ -5,9 +5,10 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./app:/var/www/html
-      - ./logs/apache_access.log:/var/log/apache2/access.log
-      - ./logs/apache_error.log:/var/log/apache2/error.log
+      - ./app:/var/www/html:Z
+      - ./logs/apache_access.log:/var/log/apache2/access.log:Z
+      - ./logs/apache_error.log:/var/log/apache2/error.log:Z
+      - ./assets:/var/www/html/assets:Z
     networks:
       - kawaii-net
     restart: unless-stopped
@@ -21,11 +22,11 @@ services:
       MYSQL_ROOT_PASSWORD: root_password_123
       MYSQL_DATABASE: kawaiiemoji_db
     volumes:
-      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - ./logs/mysql.log:/var/log/mysql/mysql.log
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:Z
+      - ./logs/mysql.log:/var/log/mysql/mysql.log:Z
     networks:
       - kawaii-net
-    command: --general-log=1 --general-log-file=/var/log/mysql/mysql.log
+    command: --general-log=1 --general-log-file=/var/log/mysql/mysql.log --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --skip-character-set-client-handshake
     restart: unless-stopped
 
 networks:

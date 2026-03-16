@@ -7,6 +7,9 @@ RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 # Copy custom Apache config
 COPY apache.conf /etc/apache2/sites-available/000-default.conf
 
+# Copy assets
+COPY ./assets /var/www/html/assets
+
 # Set working directory
 WORKDIR /var/www/html
 

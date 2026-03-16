@@ -1,3 +1,6 @@
+-- Настройка кодировки для импорта
+SET NAMES utf8mb4;
+
 -- Создание таблиц
 CREATE TABLE users (
     id          INT AUTO_INCREMENT PRIMARY KEY,
@@ -5,7 +8,7 @@ CREATE TABLE users (
     email       VARCHAR(100) NOT NULL UNIQUE,
     password    VARCHAR(255) NOT NULL,
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE emojis (
     id           INT AUTO_INCREMENT PRIMARY KEY,
@@ -20,11 +23,11 @@ CREATE TABLE emojis (
     likes        INT          DEFAULT 0,
     created_at   TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
-);
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Добавление тестовых данных (Seed data)
 INSERT INTO users (username, email, password) VALUES
-    ('kawaii_admin', 'admin@kawaiiemoji.dev', '$2b$12$EXAMPLEDUMMYHASHSTRINGFORSEEDUSERxxxxxxxxxxxxxxx');
+    ('kawaii_admin', 'admin@kawaiiemoji.dev', '$2y$10$SJdp0z.YEYKJzhULf/HdFuVT2EanNf5xi8ff/dmW29TW4g7KJgK0S');
 
 INSERT INTO emojis (symbol, name, category, tags, user_id) VALUES
     ('(づ｡◕‿‿◕｡)づ', 'Big Hug',     'kawaii', 'hug,cute,love',  1),
