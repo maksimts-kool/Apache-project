@@ -39,6 +39,7 @@ if (isset($_GET['id'])) {
                 <span>KawaiiEmoji</span>
             </a>
             <div class="header-actions">
+                <a href="/profile.php?id=<?= $_SESSION['user_id'] ?>" class="btn btn-ghost btn-sm">👤 Profile</a>
                 <a href="/" class="btn btn-ghost btn-sm">Back to Gallery</a>
             </div>
         </div>

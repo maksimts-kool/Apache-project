@@ -25,6 +25,13 @@ if (!$emoji) {
 $author = $emoji['is_anonymous'] ? 'Anonymous' : '@' . ($emoji['username'] ?? 'unknown');
 $tags = $emoji['tags'] ? explode(',', $emoji['tags']) : [];
 $is_owner = isset($_SESSION['user_id']) && $_SESSION['user_id'] == $emoji['user_id'];
+
+$user_liked = false;
+if (isset($_SESSION['user_id'])) {
+    $likeCheck = $pdo->prepare("SELECT 1 FROM emoji_likes WHERE user_id = ? AND emoji_id = ?");
+    $likeCheck->execute([$_SESSION['user_id'], $emoji['id']]);
+    $user_liked = (bool) $likeCheck->fetch();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -37,12 +44,22 @@ $is_owner = isset($_SESSION['user_id']) && $_SESSION['user_id'] == $emoji['user_
 <body>
     <header class="header">
         <div class="header-inner">
-            <a href="/" class="logo">
-                <span class="logo-icon">🌸</span>
-                <span>KawaiiEmoji</span>
-            </a>
+            <div class="header-left">
+                <a href="/" class="back-arrow" aria-label="Back to gallery">←</a>
+                <a href="/" class="logo">
+                    <span class="logo-icon">🌸</span>
+                    <span>KawaiiEmoji</span>
+                </a>
+            </div>
             <div class="header-actions">
-                <a href="/" class="btn btn-ghost btn-sm">Back to Gallery</a>
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <a href="/profile.php?id=<?= $_SESSION['user_id'] ?>" class="btn btn-ghost btn-sm">👤 Profile</a>
+                    <a href="/upload.php" class="btn btn-primary btn-sm">Upload ✨</a>
+                    <a href="/api/auth.php?action=logout" class="btn btn-ghost btn-sm">Logout</a>
+                <?php else: ?>
+                    <a href="/login.php" class="btn btn-ghost btn-sm">Log in</a>
+                    <a href="/register.php" class="btn btn-primary btn-sm">Register</a>
+                <?php endif; ?>
             </div>
         </div>
     </header>
@@ -66,7 +83,7 @@ $is_owner = isset($_SESSION['user_id']) && $_SESSION['user_id'] == $emoji['user_
                 <span>•</span>
                 <span><?= htmlspecialchars(ucfirst($emoji['category'])) ?></span>
                 <span>•</span>
-                <span>💾 <?= number_format($emoji['downloads']) ?></span>
+                <span>📋 <span class="copy-count" data-id="<?= $emoji['id'] ?>"><?= number_format($emoji['downloads']) ?></span></span>
                 <span>•</span>
                 <span>📅 <?= date('M j, Y', strtotime($emoji['created_at'])) ?></span>
             </div>
@@ -86,11 +103,11 @@ $is_owner = isset($_SESSION['user_id']) && $_SESSION['user_id'] == $emoji['user_
             <?php endif; ?>
 
             <div class="detail-actions">
-                <button class="btn btn-primary btn-copy" style="padding: 12px 32px; font-size: 16px;" data-symbol="<?= htmlspecialchars($emoji['symbol'], ENT_QUOTES) ?>">
+                <button class="btn btn-primary btn-copy" style="padding: 12px 32px; font-size: 16px;" data-symbol="<?= htmlspecialchars($emoji['symbol'], ENT_QUOTES) ?>" data-id="<?= $emoji['id'] ?>">
                     📋 Copy Emoji
                 </button>
-                <button class="btn btn-secondary btn-like" style="padding: 12px 24px; font-size: 16px;" data-id="<?= $emoji['id'] ?>">
-                    ♡ <span class="like-count"><?= number_format($emoji['likes']) ?></span>
+                <button class="btn btn-secondary btn-like<?= $user_liked ? ' liked' : '' ?>" style="padding: 12px 24px; font-size: 16px;" data-id="<?= $emoji['id'] ?>">
+                    <span class="like-icon"><?= $user_liked ? '♥' : '♡' ?></span> <span class="like-count"><?= number_format($emoji['likes']) ?></span>
                 </button>
             </div>
         </div>

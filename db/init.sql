@@ -25,6 +25,14 @@ CREATE TABLE emojis (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE emoji_likes (
+    user_id  INT NOT NULL,
+    emoji_id INT NOT NULL,
+    PRIMARY KEY (user_id, emoji_id),
+    FOREIGN KEY (user_id)  REFERENCES users(id)  ON DELETE CASCADE,
+    FOREIGN KEY (emoji_id) REFERENCES emojis(id) ON DELETE CASCADE
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Добавление тестовых данных (Seed data)
 INSERT INTO users (username, email, password) VALUES
     ('kawaii_admin', 'admin@kawaiiemoji.dev', '$2y$10$SJdp0z.YEYKJzhULf/HdFuVT2EanNf5xi8ff/dmW29TW4g7KJgK0S');

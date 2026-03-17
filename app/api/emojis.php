@@ -8,16 +8,50 @@ $method = $_SERVER['REQUEST_METHOD'];
 if ($method === 'POST') {
     // Check if it's a LIKE action
     $input = json_decode(file_get_contents('php://input'), true);
+    // COPY action — increment downloads
+    if (isset($input['action']) && $input['action'] === 'copy') {
+        $id = (int)($input['id'] ?? 0);
+        if ($id > 0) {
+            $pdo->prepare("UPDATE emojis SET downloads = downloads + 1 WHERE id = ?")->execute([$id]);
+            $stmt = $pdo->prepare("SELECT downloads FROM emojis WHERE id = ?");
+            $stmt->execute([$id]);
+            $row = $stmt->fetch();
+            echo json_encode(['success' => true, 'downloads' => $row['downloads'] ?? 0]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Invalid id']);
+        }
+        exit;
+    }
+
     if (isset($input['action']) && $input['action'] === 'like') {
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode(['success' => false, 'message' => 'Login required', 'auth' => false]);
+            exit;
+        }
         $id = $input['id'] ?? 0;
-        $stmt = $pdo->prepare("UPDATE emojis SET likes = likes + 1 WHERE id = ?");
-        $stmt->execute([$id]);
+        $uid = $_SESSION['user_id'];
+
+        // Check if already liked
+        $check = $pdo->prepare("SELECT 1 FROM emoji_likes WHERE user_id = ? AND emoji_id = ?");
+        $check->execute([$uid, $id]);
+
+        if ($check->fetch()) {
+            // Unlike
+            $pdo->prepare("DELETE FROM emoji_likes WHERE user_id = ? AND emoji_id = ?")->execute([$uid, $id]);
+            $pdo->prepare("UPDATE emojis SET likes = likes - 1 WHERE id = ? AND likes > 0")->execute([$id]);
+            $liked = false;
+        } else {
+            // Like
+            $pdo->prepare("INSERT INTO emoji_likes (user_id, emoji_id) VALUES (?, ?)")->execute([$uid, $id]);
+            $pdo->prepare("UPDATE emojis SET likes = likes + 1 WHERE id = ?")->execute([$id]);
+            $liked = true;
+        }
 
         $stmt = $pdo->prepare("SELECT likes FROM emojis WHERE id = ?");
         $stmt->execute([$id]);
         $row = $stmt->fetch();
-        
-        echo json_encode(['success' => true, 'likes' => $row['likes'] ?? 0]);
+
+        echo json_encode(['success' => true, 'likes' => $row['likes'] ?? 0, 'liked' => $liked]);
         exit;
     }
 

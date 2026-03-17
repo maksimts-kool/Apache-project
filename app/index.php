@@ -29,6 +29,7 @@ $total_emojis = $row['total'] ?? 0;
             </div>
             <div class="header-actions">
                 <?php if (isset($_SESSION['user_id'])): ?>
+                    <a href="/profile.php?id=<?= $_SESSION['user_id'] ?>" class="btn btn-ghost btn-sm">👤 Profile</a>
                     <a href="/upload.php" class="btn btn-primary btn-sm">Upload ✨</a>
                     <a href="/api/auth.php?action=logout" class="btn btn-ghost btn-sm">Logout</a>
                 <?php else: ?>

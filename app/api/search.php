@@ -1,4 +1,5 @@
 <?php
+session_start();
 header('Content-Type: application/json; charset=utf-8');
 require_once '../db.php';
 
@@ -37,6 +38,19 @@ switch ($sort) {
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $emojis = $stmt->fetchAll();
+
+// Add user_liked flag if logged in
+if (isset($_SESSION['user_id'])) {
+    $uid = $_SESSION['user_id'];
+    $likeStmt = $pdo->prepare("SELECT emoji_id FROM emoji_likes WHERE user_id = ?");
+    $likeStmt->execute([$uid]);
+    $likedIds = array_column($likeStmt->fetchAll(), 'emoji_id');
+
+    foreach ($emojis as &$emoji) {
+        $emoji['user_liked'] = in_array($emoji['id'], $likedIds);
+    }
+    unset($emoji);
+}
 
 echo json_encode([
     'success' => true,

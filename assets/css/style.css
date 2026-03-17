@@ -47,6 +47,22 @@ body {
     background: var(--bg);
     line-height: 1.6;
     min-height: 100vh;
+    animation: pageFadeIn 0.35s ease both;
+}
+
+body.page-exit {
+    animation: pageFadeOut 0.25s ease forwards;
+    pointer-events: none;
+}
+
+@keyframes pageFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pageFadeOut {
+    from { opacity: 1; transform: translateY(0); }
+    to   { opacity: 0; transform: translateY(-8px); }
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -90,6 +106,30 @@ img {
     align-items: center;
     justify-content: space-between;
     gap: 16px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.back-arrow {
+    font-size: 22px;
+    color: var(--text);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    transition: background 0.2s, color 0.2s;
+}
+
+.back-arrow:hover {
+    background: var(--bg);
+    color: var(--primary);
 }
 
 .logo {
@@ -398,14 +438,21 @@ img {
     border-radius: var(--radius-card);
     padding: 16px;
     text-align: center;
-    transition: all 0.25s ease;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, opacity 0.25s ease;
     position: relative;
     cursor: pointer;
+    opacity: 0;
+    transform: translateY(16px);
+}
+
+.emoji-card.card-visible {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .emoji-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 30px var(--shadow-pink);
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 12px 36px var(--shadow-pink);
     border-color: var(--primary);
 }
 
@@ -485,6 +532,17 @@ img {
 .card-owner-actions button:hover {
     border-color: var(--primary);
     background: var(--bg);
+}
+
+/* ---- Liked State ---- */
+.btn-like.liked {
+    color: var(--primary);
+    border-color: var(--primary);
+    background: #FFF0F6;
+}
+
+.btn-like.liked .like-icon {
+    color: var(--primary);
 }
 
 /* ---- Live Stats ---- */
@@ -1142,6 +1200,99 @@ img {
 
 .forgot-link a:hover {
     color: var(--primary);
+}
+
+/* ---- Profile Page ---- */
+.profile-page {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px 40px;
+}
+
+.profile-header {
+    text-align: center;
+    padding: 40px 0 24px;
+}
+
+.profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: #fff;
+    font-family: 'Nunito', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+    box-shadow: 0 4px 16px var(--shadow-pink);
+}
+
+.profile-header h1 {
+    font-size: 24px;
+    margin-bottom: 4px;
+}
+
+.profile-joined {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.profile-tabs {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.profile-tab {
+    padding: 10px 24px;
+    border-radius: var(--radius-pill);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 2px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s;
+}
+
+.profile-tab:hover {
+    border-color: var(--primary);
+    color: var(--text);
+}
+
+.profile-tab.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+}
+
+.tab-count {
+    background: rgba(255, 255, 255, 0.25);
+    padding: 2px 8px;
+    border-radius: var(--radius-pill);
+    font-size: 12px;
+    margin-left: 4px;
+}
+
+.profile-tab.active .tab-count {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.profile-grid {
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+.profile-empty {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 60px 24px;
+    font-size: 15px;
 }
 
 /* ---- Responsive ---- */

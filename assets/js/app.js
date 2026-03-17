@@ -5,6 +5,7 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
+    initPageTransitions();
     initCopyButtons();
     initLikeButtons();
     initCategoryTabs();
@@ -14,7 +15,50 @@ document.addEventListener('DOMContentLoaded', () => {
     initTagsInput();
     initLivePreview();
     initCharCounters();
+    initScrollReveal();
+    revealCards(document.querySelectorAll('.emoji-card'));
 });
+
+/* ========== Page Transitions ========== */
+
+function initPageTransitions() {
+    document.addEventListener('click', (e) => {
+        const link = e.target.closest('a[href]');
+        if (!link) return;
+
+        const href = link.getAttribute('href');
+        // Skip external, hash, javascript, and new-tab links
+        if (!href || href.startsWith('#') || href.startsWith('javascript') ||
+            href.startsWith('http') || link.target === '_blank') return;
+
+        e.preventDefault();
+        document.body.classList.add('page-exit');
+        setTimeout(() => { window.location.href = href; }, 250);
+    });
+}
+
+/* ========== Staggered Card Reveal ========== */
+
+function revealCards(cards) {
+    cards.forEach((card, i) => {
+        setTimeout(() => card.classList.add('card-visible'), i * 50);
+    });
+}
+
+/* ========== Scroll Reveal ========== */
+
+function initScrollReveal() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('card-visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.emoji-card').forEach(card => observer.observe(card));
+}
 
 /* ========== Toast Notifications ========== */
 
@@ -44,9 +88,10 @@ function initCopyButtons() {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
             const symbol = btn.dataset.symbol;
+            const emojiId = btn.dataset.id;
             if (!symbol) return;
 
-            navigator.clipboard.writeText(symbol).then(() => {
+            const doCopy = () => {
                 const original = btn.textContent;
                 btn.textContent = '✓ Copied!';
                 btn.classList.add('btn-primary');
@@ -54,8 +99,35 @@ function initCopyButtons() {
                     btn.textContent = original;
                     btn.classList.remove('btn-primary');
                 }, 1500);
-            }).catch(() => {
-                // Fallback for older browsers
+
+                // Track unique copy per device via localStorage
+                if (emojiId) {
+                    const key = 'copied_emojis';
+                    const copied = JSON.parse(localStorage.getItem(key) || '[]');
+                    if (!copied.includes(emojiId)) {
+                        copied.push(emojiId);
+                        localStorage.setItem(key, JSON.stringify(copied));
+                        // Increment server-side download counter
+                        fetch('/api/emojis.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ action: 'copy', id: emojiId })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Update all copy count labels for this emoji on the page
+                                document.querySelectorAll(`.copy-count[data-id="${emojiId}"]`).forEach(el => {
+                                    el.textContent = data.downloads;
+                                });
+                            }
+                        })
+                        .catch(() => {});
+                    }
+                }
+            };
+
+            navigator.clipboard.writeText(symbol).then(doCopy).catch(() => {
                 const textarea = document.createElement('textarea');
                 textarea.value = symbol;
                 textarea.style.position = 'fixed';
@@ -64,14 +136,7 @@ function initCopyButtons() {
                 textarea.select();
                 document.execCommand('copy');
                 document.body.removeChild(textarea);
-
-                const original = btn.textContent;
-                btn.textContent = '✓ Copied!';
-                btn.classList.add('btn-primary');
-                setTimeout(() => {
-                    btn.textContent = original;
-                    btn.classList.remove('btn-primary');
-                }, 1500);
+                doCopy();
             });
         });
     });
@@ -96,12 +161,23 @@ function initLikeButtons() {
             })
                 .then(res => res.json())
                 .then(data => {
+                    if (data.auth === false) {
+                        showToast('Sign in to like emojis', 'error');
+                        setTimeout(() => { window.location.href = '/login.php'; }, 1500);
+                        return;
+                    }
                     if (data.success) {
                         const countEl = btn.querySelector('.like-count');
                         if (countEl) {
                             countEl.textContent = data.likes;
                         }
-                        btn.style.color = '#FF6B9D';
+                        if (data.liked) {
+                            btn.classList.add('liked');
+                            btn.querySelector('.like-icon').textContent = '♥';
+                        } else {
+                            btn.classList.remove('liked');
+                            btn.querySelector('.like-icon').textContent = '♡';
+                        }
                     }
                 })
                 .catch(() => { });
@@ -173,6 +249,7 @@ function loadEmojis(params = {}) {
                 // Re-init interactive buttons
                 initCopyButtons();
                 initLikeButtons();
+                revealCards(grid.querySelectorAll('.emoji-card'));
             } else {
                 grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#9CA3AF;padding:40px;">No emojis found :(</p>';
             }
@@ -190,18 +267,21 @@ function loadEmojis(params = {}) {
 
 function renderEmojiCard(emoji) {
     const author = emoji.is_anonymous ? 'Anonymous' : `@${emoji.username || 'unknown'}`;
+    const liked = emoji.user_liked ? true : false;
+    const likedClass = liked ? ' liked' : '';
+    const heartIcon = liked ? '♥' : '♡';
     return `
         <div class="emoji-card" onclick="window.location='/emoji.php?id=${emoji.id}'">
             <div class="emoji-symbol">${escapeHtml(emoji.symbol)}</div>
             <div class="emoji-name">${escapeHtml(emoji.name)}</div>
             <div class="emoji-meta">
                 <span>${author}</span>
-                <span>💾 ${emoji.downloads || 0}</span>
+                <span>📋 <span class="copy-count" data-id="${emoji.id}">${emoji.downloads || 0}</span></span>
             </div>
             <div class="card-actions">
-                <button class="btn btn-secondary btn-sm btn-copy" data-symbol="${emoji.symbol}" onclick="event.stopPropagation()">📋 Copy</button>
-                <button class="btn btn-ghost btn-sm btn-like" data-id="${emoji.id}" onclick="event.stopPropagation()">
-                    ♡ <span class="like-count">${emoji.likes || 0}</span>
+                <button class="btn btn-secondary btn-sm btn-copy" data-symbol="${escapeAttr(emoji.symbol)}" data-id="${emoji.id}" onclick="event.stopPropagation()">📋 Copy</button>
+                <button class="btn btn-ghost btn-sm btn-like${likedClass}" data-id="${emoji.id}" onclick="event.stopPropagation()">
+                    <span class="like-icon">${heartIcon}</span> <span class="like-count">${emoji.likes || 0}</span>
                 </button>
             </div>
         </div>
