@@ -117,8 +117,15 @@ $total_emojis = $row['total'] ?? 0;
     <script src="/assets/js/app.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Load all emojis initially
-            loadEmojis({ sort: 'popular' });
+            const urlParams = new URLSearchParams(window.location.search);
+            const q = urlParams.get('q');
+            if (q) {
+                const searchInput = document.getElementById('search-input');
+                if (searchInput) searchInput.value = q;
+                loadEmojis({ q, sort: 'popular' });
+            } else {
+                loadEmojis({ sort: 'popular' });
+            }
         });
     </script>
 </body>

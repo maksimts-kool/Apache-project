@@ -91,7 +91,7 @@ if (isset($_SESSION['user_id'])) {
             <?php if (!empty($tags)): ?>
             <div class="detail-tags">
                 <?php foreach ($tags as $tag): ?>
-                    <span class="tag">#<?= htmlspecialchars(trim($tag)) ?></span>
+                    <a href="/?q=%23<?= urlencode(trim($tag)) ?>" class="tag">#<?= htmlspecialchars(trim($tag)) ?></a>
                 <?php endforeach; ?>
             </div>
             <?php endif; ?>

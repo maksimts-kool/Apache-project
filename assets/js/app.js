@@ -242,6 +242,7 @@ function loadEmojis(params = {}) {
                 // Re-init interactive buttons
                 initCopyButtons();
                 initLikeButtons();
+                initTagClicks();
                 revealCards(grid.querySelectorAll('.emoji-card'));
             } else {
                 grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#9CA3AF;padding:40px;">No emojis found :(</p>';
@@ -263,6 +264,15 @@ function renderEmojiCard(emoji) {
     const liked = emoji.user_liked ? true : false;
     const likedClass = liked ? ' liked' : '';
     const heartIcon = liked ? '♥' : '♡';
+
+    // Parse tags
+    const tags = emoji.tags ? emoji.tags.split(',').filter(t => t.trim()) : [];
+    const tagsHtml = tags.length > 0
+        ? `<div class="detail-tags" style="margin-bottom: 8px;">
+            ${tags.map(tag => `<a href="/?q=%23${encodeURIComponent(tag)}" class="tag" data-tag="${escapeAttr(tag)}" onclick="event.stopPropagation()">#${escapeHtml(tag)}</a>`).join(' ')}
+           </div>`
+        : '';
+
     return `
         <div class="emoji-card" onclick="window.location='/emoji.php?id=${emoji.id}'">
             <div class="emoji-symbol">${escapeHtml(emoji.symbol)}</div>
@@ -271,6 +281,7 @@ function renderEmojiCard(emoji) {
                 <span>${author}</span>
                 <span>📋 <span class="copy-count" data-id="${emoji.id}">${emoji.downloads || 0}</span></span>
             </div>
+            ${tagsHtml}
             <div class="card-actions">
                 <button class="btn btn-secondary btn-sm btn-copy" data-symbol="${escapeAttr(emoji.symbol)}" data-id="${emoji.id}" onclick="event.stopPropagation()">📋 Copy</button>
                 <button class="btn btn-ghost btn-sm btn-like${likedClass}" data-id="${emoji.id}" onclick="event.stopPropagation()">
@@ -289,6 +300,28 @@ function escapeHtml(text) {
 
 function escapeAttr(text) {
     return text.replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function initTagClicks() {
+    document.querySelectorAll('.detail-tags .tag').forEach(pill => {
+        pill.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const tag = pill.dataset.tag;
+            if (!tag) return; // For detail page tags that don't have data-tag (they are <a>)
+            
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) {
+                searchInput.value = `#${tag}`;
+                // Scroll to gallery
+                const gallery = document.getElementById('gallery');
+                if (gallery) {
+                    gallery.scrollIntoView({ behavior: 'smooth' });
+                }
+                loadEmojis({ q: `#${tag}` });
+            }
+        });
+    });
 }
 
 /* ========== Password Toggle ========== */

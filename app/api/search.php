@@ -11,10 +11,20 @@ $sql = "SELECT e.*, u.username FROM emojis e LEFT JOIN users u ON e.user_id = u.
 $params = [];
 
 if (!empty($q)) {
-    $sql .= " AND (e.name LIKE ? OR e.tags LIKE ? OR e.symbol LIKE ?)";
-    $params[] = "%$q%";
-    $params[] = "%$q%";
-    $params[] = "%$q%";
+    if (strpos($q, '#') === 0) {
+        // Hashtag search: search only in tags column
+        $tag = ltrim($q, '#');
+        $sql .= " AND (e.tags LIKE ? OR e.tags = ? OR FIND_IN_SET(?, e.tags))";
+        $params[] = "%$tag%";
+        $params[] = $tag;
+        $params[] = $tag;
+    } else {
+        // Normal search: search in name, tags, and symbol
+        $sql .= " AND (e.name LIKE ? OR e.tags LIKE ? OR e.symbol LIKE ?)";
+        $params[] = "%$q%";
+        $params[] = "%$q%";
+        $params[] = "%$q%";
+    }
 }
 
 if (!empty($category)) {
