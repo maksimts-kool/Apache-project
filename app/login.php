@@ -20,6 +20,7 @@ if (isset($_SESSION['user_id'])) {
     <div class="toast-container" id="toast-container"></div>
 
     <div class="auth-card">
+        <a href="index.php" class="back-arrow" style="position: absolute; top: 16px; left: 16px;">←</a>
         <div class="auth-logo">🌸</div>
         <h1>Welcome Back!</h1>
         <p class="auth-subtitle">Log in to create and share kawaii ✨</p>
