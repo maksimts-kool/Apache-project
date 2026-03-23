@@ -202,14 +202,65 @@ function initSearchBar() {
     const searchInput = document.getElementById('search-input');
     if (!searchInput) return;
 
+    // Create suggestions dropdown
+    const container = searchInput.parentElement;
+    const suggestions = document.createElement('div');
+    suggestions.className = 'tag-suggestions';
+    container.appendChild(suggestions);
+
     let debounceTimer;
+    let suggestionsTimer;
+
     searchInput.addEventListener('input', () => {
+        const query = searchInput.value.trim();
+
+        // Standard emoji search
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
-            const query = searchInput.value.trim();
             loadEmojis({ q: query });
         }, 300);
+
+        // Tag suggestions
+        clearTimeout(suggestionsTimer);
+        if (query.startsWith('#') && query.length > 1) {
+            suggestionsTimer = setTimeout(() => {
+                fetch(`/api/tags.php?q=${encodeURIComponent(query)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.tags && data.tags.length > 0) {
+                            renderSuggestions(data.tags, suggestions, searchInput);
+                        } else {
+                            suggestions.style.display = 'none';
+                        }
+                    });
+            }, 200);
+        } else {
+            suggestions.style.display = 'none';
+        }
     });
+
+    // Close suggestions on click outside
+    document.addEventListener('click', (e) => {
+        if (!container.contains(e.target)) {
+            suggestions.style.display = 'none';
+        }
+    });
+}
+
+function renderSuggestions(tags, container, input) {
+    container.innerHTML = '';
+    tags.forEach(tag => {
+        const item = document.createElement('div');
+        item.className = 'tag-suggestion-item';
+        item.innerHTML = `<span class="suggestion-icon">#</span><span>${tag}</span>`;
+        item.addEventListener('click', () => {
+            input.value = `#${tag}`;
+            container.style.display = 'none';
+            loadEmojis({ q: `#${tag}` });
+        });
+        container.appendChild(item);
+    });
+    container.style.display = 'block';
 }
 
 /* ========== Load Emojis (AJAX) ========== */
@@ -430,6 +481,59 @@ function initTagsInput() {
 
         container.insertBefore(pill, input);
     }
+
+    // Suggestions for tags input
+    const suggestions = document.createElement('div');
+    suggestions.className = 'tag-suggestions';
+    container.appendChild(suggestions);
+
+    let suggestionsTimer;
+    input.addEventListener('input', () => {
+        const val = input.value.trim();
+        clearTimeout(suggestionsTimer);
+        // Trigger suggestions only if starts with # (as per request) or just starts typing
+        if (val.startsWith('#') && val.length > 1) {
+            suggestionsTimer = setTimeout(() => {
+                fetch(`/api/tags.php?q=${encodeURIComponent(val)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.tags && data.tags.length > 0) {
+                            renderTagsSuggestions(data.tags, suggestions, input, (selected) => {
+                                if (tags.length < maxTags && !tags.includes(selected)) {
+                                    tags.push(selected);
+                                    addTagPill(selected, container, input);
+                                    if (hiddenInput) hiddenInput.value = tags.join(',');
+                                    input.value = '';
+                                }
+                                suggestions.style.display = 'none';
+                            });
+                        } else {
+                            suggestions.style.display = 'none';
+                        }
+                    });
+            }, 200);
+        } else {
+            suggestions.style.display = 'none';
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!container.contains(e.target)) {
+            suggestions.style.display = 'none';
+        }
+    });
+}
+
+function renderTagsSuggestions(tags, container, input, onSelect) {
+    container.innerHTML = '';
+    tags.forEach(tag => {
+        const item = document.createElement('div');
+        item.className = 'tag-suggestion-item';
+        item.innerHTML = `<span class="suggestion-icon">#</span><span>${tag}</span>`;
+        item.addEventListener('click', () => onSelect(tag));
+        container.appendChild(item);
+    });
+    container.style.display = 'block';
 }
 
 /* ========== Live Preview (Upload Page) ========== */
