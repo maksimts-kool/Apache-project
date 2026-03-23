@@ -83,7 +83,7 @@ if ($method === 'POST') {
         exit;
     }
 
-    $symbol = $_POST['symbol'] ?? '';
+    $symbol = trim($_POST['symbol'] ?? '');
     $name = $_POST['name'] ?? '';
     $category = $_POST['category'] ?? '';
     $tags = $_POST['tags'] ?? '';
@@ -93,6 +93,14 @@ if ($method === 'POST') {
 
     if (empty($symbol) || empty($name) || empty($category)) {
         echo json_encode(['success' => false, 'message' => 'Required fields are missing']);
+        exit;
+    }
+
+    // Prevent uploading the same emoji symbol multiple times.
+    $dupCheck = $pdo->prepare("SELECT id FROM emojis WHERE symbol = ? LIMIT 1");
+    $dupCheck->execute([$symbol]);
+    if ($dupCheck->fetch()) {
+        echo json_encode(['success' => false, 'message' => 'This emoji already exists']);
         exit;
     }
 
@@ -114,7 +122,7 @@ if ($method === 'PUT') {
 
     $input = json_decode(file_get_contents('php://input'), true);
     $id = $input['id'] ?? 0;
-    $symbol = $input['symbol'] ?? '';
+    $symbol = trim($input['symbol'] ?? '');
     $name = $input['name'] ?? '';
     $category = $input['category'] ?? '';
     $tags = $input['tags'] ?? '';
@@ -128,6 +136,14 @@ if ($method === 'PUT') {
 
     if (!$emoji || $emoji['user_id'] != $_SESSION['user_id']) {
         echo json_encode(['success' => false, 'message' => 'Unauthorized or not found']);
+        exit;
+    }
+
+    // Prevent updating to a symbol that already exists on another emoji.
+    $dupCheck = $pdo->prepare("SELECT id FROM emojis WHERE symbol = ? AND id <> ? LIMIT 1");
+    $dupCheck->execute([$symbol, $id]);
+    if ($dupCheck->fetch()) {
+        echo json_encode(['success' => false, 'message' => 'This emoji already exists']);
         exit;
     }
 
