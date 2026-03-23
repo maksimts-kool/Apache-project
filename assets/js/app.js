@@ -100,19 +100,13 @@ function initCopyButtons() {
                     btn.classList.remove('btn-primary');
                 }, 1500);
 
-                // Track unique copy per device via localStorage
                 if (emojiId) {
-                    const key = 'copied_emojis';
-                    const copied = JSON.parse(localStorage.getItem(key) || '[]');
-                    if (!copied.includes(emojiId)) {
-                        copied.push(emojiId);
-                        localStorage.setItem(key, JSON.stringify(copied));
-                        // Increment server-side download counter
-                        fetch('/api/emojis.php', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ action: 'copy', id: emojiId })
-                        })
+                    // Increment server-side download counter on every successful copy
+                    fetch('/api/emojis.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'copy', id: emojiId })
+                    })
                         .then(res => res.json())
                         .then(data => {
                             if (data.success) {
@@ -122,8 +116,7 @@ function initCopyButtons() {
                                 });
                             }
                         })
-                        .catch(() => {});
-                    }
+                        .catch(() => { });
                 }
             };
 
