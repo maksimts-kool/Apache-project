@@ -18,8 +18,8 @@ browsable gallery with search, categories, and download counts.
 | 1 | CEO / Team Lead (Scrum Master) | Hussein | Communication, coordination, end-to-end testing |
 | 2 | DB Admin | Timur | Database container, schema, logging |
 | 3 | Webserver Admin | Maksim | Web server container, port mapping, logging |
-| 4 | App Developer | Nikita L | Web application code (PHP) |
-| 5 | DevOps / Monitoring | Nikita G | Docker Compose, networking, volumes, monitoring |
+| 4 | App Developer | Nikita L, Maksim | Web application code (PHP) |
+| 5 | DevOps / Monitoring | Timur | Docker Compose, networking, volumes, monitoring |
 
 ---
 
@@ -129,7 +129,7 @@ INSERT INTO emojis (symbol, name, category, tags, user_id) VALUES
 - Enable PHP processing (mod_php or php-fpm)
 - Test that all page routes return HTTP 200
 
-### 4. App Developer — Nikita L
+### 4. App Developer — Nikita L, Maksim
 - Build the following pages:
   - **`index.php`** — gallery grid of all emojis from DB, search bar,
     category filter tabs, copy-to-clipboard button per card
@@ -145,7 +145,7 @@ INSERT INTO emojis (symbol, name, category, tags, user_id) VALUES
 - Show at least one live DB value on the home page
   (e.g. total emoji count: `"1,240 emojis and counting ✨"`)
 
-### 5. DevOps / Monitoring — Nikita G
+### 5. DevOps / Monitoring — Timur
 - Write and maintain `docker-compose.yml`
 - Define three services: `webserver`, `app` (if separate), `db`
 - Configure internal Docker network (`kawaii-net`) between services
