@@ -107,7 +107,7 @@ $total_emojis = $row['total'] ?? 0;
                 <a href="#">Contact</a>
             </div>
             <div class="footer-credit">
-                🌸 KawaiiEmoji © 2026. Made with ♥ by ------ Team
+                🌸 KawaiiEmoji © 2026. Made with ♥
             </div>
         </div>
     </footer>
