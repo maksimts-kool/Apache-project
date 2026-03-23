@@ -105,26 +105,36 @@ if ($is_owner) {
         const isOwner = <?= $is_owner ? 'true' : 'false' ?>;
         let currentTab = 'emojis';
 
+        let profileLoadingTimeout = null;
+
         function loadProfileEmojis(tab) {
             currentTab = tab;
             const grid = document.getElementById('profile-grid');
             const empty = document.getElementById('profile-empty');
-            grid.innerHTML = '';
+            
+            if (profileLoadingTimeout) clearTimeout(profileLoadingTimeout);
             empty.style.display = 'none';
 
-            for (let i = 0; i < 6; i++) {
-                grid.innerHTML += `
-                    <div class="skeleton-card">
-                        <div class="skeleton-preview"></div>
-                        <div class="skeleton-line"></div>
-                        <div class="skeleton-line short"></div>
-                    </div>
-                `;
-            }
+            profileLoadingTimeout = setTimeout(() => {
+                grid.innerHTML = '';
+                for (let i = 0; i < 6; i++) {
+                    grid.innerHTML += `
+                        <div class="skeleton-card">
+                            <div class="skeleton-preview"></div>
+                            <div class="skeleton-line"></div>
+                            <div class="skeleton-line short"></div>
+                        </div>
+                    `;
+                }
+            }, 1000);
 
             fetch(`/api/profile.php?id=${profileId}&tab=${tab}`)
                 .then(res => res.json())
                 .then(data => {
+                    if (profileLoadingTimeout) {
+                        clearTimeout(profileLoadingTimeout);
+                        profileLoadingTimeout = null;
+                    }
                     grid.innerHTML = '';
                     if (data.emojis && data.emojis.length > 0) {
                         data.emojis.forEach(emoji => {
@@ -138,6 +148,10 @@ if ($is_owner) {
                     }
                 })
                 .catch(() => {
+                    if (profileLoadingTimeout) {
+                        clearTimeout(profileLoadingTimeout);
+                        profileLoadingTimeout = null;
+                    }
                     grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#F87171;padding:40px;">Failed to load</p>';
                 });
         }

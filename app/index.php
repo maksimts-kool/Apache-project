@@ -83,14 +83,6 @@ $total_emojis = $row['total'] ?? 0;
 
         <div class="gallery-grid">
             <!-- Emojis will be loaded here via JS -->
-            <!-- Initial skeleton loaders -->
-            <?php for ($i=0; $i<10; $i++): ?>
-            <div class="skeleton-card">
-                <div class="skeleton-preview"></div>
-                <div class="skeleton-line"></div>
-                <div class="skeleton-line short"></div>
-            </div>
-            <?php endfor; ?>
         </div>
 
         <div class="live-stats">

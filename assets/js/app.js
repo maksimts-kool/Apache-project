@@ -214,26 +214,38 @@ function initSearchBar() {
 
 /* ========== Load Emojis (AJAX) ========== */
 
+let loadingTimeoutId = null;
+
 function loadEmojis(params = {}) {
     const grid = document.querySelector('.gallery-grid');
     if (!grid) return;
 
-    // Show skeleton loader
-    grid.innerHTML = '';
-    for (let i = 0; i < 10; i++) {
-        grid.innerHTML += `
-            <div class="skeleton-card">
-                <div class="skeleton-preview"></div>
-                <div class="skeleton-line"></div>
-                <div class="skeleton-line short"></div>
-            </div>
-        `;
-    }
+    // Clear any previous loader timeout
+    if (loadingTimeoutId) clearTimeout(loadingTimeoutId);
+
+    // Schedule showing the loader ONLY after 1 second of waiting
+    loadingTimeoutId = setTimeout(() => {
+        grid.innerHTML = '';
+        for (let i = 0; i < 10; i++) {
+            grid.innerHTML += `
+                <div class="skeleton-card">
+                    <div class="skeleton-preview"></div>
+                    <div class="skeleton-line"></div>
+                    <div class="skeleton-line short"></div>
+                </div>
+            `;
+        }
+    }, 1000);
 
     const queryString = new URLSearchParams(params).toString();
     fetch(`/api/search.php?${queryString}`)
         .then(res => res.json())
         .then(data => {
+            // Data arrived! Cancel the pending loader animation
+            if (loadingTimeoutId) {
+                clearTimeout(loadingTimeoutId);
+                loadingTimeoutId = null;
+            }
             grid.innerHTML = '';
             if (data.emojis && data.emojis.length > 0) {
                 data.emojis.forEach(emoji => {
@@ -255,6 +267,10 @@ function loadEmojis(params = {}) {
             }
         })
         .catch(() => {
+            if (loadingTimeoutId) {
+                clearTimeout(loadingTimeoutId);
+                loadingTimeoutId = null;
+            }
             grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#F87171;padding:40px;">Failed to load emojis</p>';
         });
 }
