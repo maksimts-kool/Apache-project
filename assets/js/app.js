@@ -280,9 +280,10 @@ function loadEmojis(params = {}) {
         for (let i = 0; i < 10; i++) {
             grid.innerHTML += `
                 <div class="skeleton-card">
-                    <div class="skeleton-preview"></div>
-                    <div class="skeleton-line"></div>
-                    <div class="skeleton-line short"></div>
+                    <div class="skeleton-row row-1"><div class="skeleton-preview"></div></div>
+                    <div class="skeleton-row row-2"><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
+                    <div class="skeleton-row row-3"><div class="skeleton-line"></div></div>
+                    <div class="skeleton-row row-4"><div class="skeleton-line"></div><div class="skeleton-line"></div></div>
                 </div>
             `;
         }
@@ -335,25 +336,33 @@ function renderEmojiCard(emoji) {
     // Parse tags
     const tags = emoji.tags ? emoji.tags.split(',').filter(t => t.trim()) : [];
     const tagsHtml = tags.length > 0
-        ? `<div class="detail-tags" style="margin-bottom: 8px;">
+        ? `<div class="detail-tags">
             ${tags.map(tag => `<a href="/?q=%23${encodeURIComponent(tag)}" class="tag" data-tag="${escapeAttr(tag)}" onclick="event.stopPropagation()">#${escapeHtml(tag)}</a>`).join(' ')}
            </div>`
-        : '';
+        : '<div class="detail-tags"></div>'; // Empty row for consistency
 
     return `
         <div class="emoji-card" onclick="window.location='/emoji.php?id=${emoji.id}'">
-            <div class="emoji-symbol">${escapeHtml(emoji.symbol)}</div>
-            <div class="emoji-name">${escapeHtml(emoji.name)}</div>
-            <div class="emoji-meta">
-                <span>${author}</span>
-                <span>📋 <span class="copy-count" data-id="${emoji.id}">${emoji.downloads || 0}</span></span>
+            <div class="emoji-card-row row-emoji">
+                <div class="emoji-symbol">${escapeHtml(emoji.symbol)}</div>
             </div>
-            ${tagsHtml}
-            <div class="card-actions">
-                <button class="btn btn-secondary btn-sm btn-copy" data-symbol="${escapeAttr(emoji.symbol)}" data-id="${emoji.id}" onclick="event.stopPropagation()">📋 Copy</button>
-                <button class="btn btn-ghost btn-sm btn-like${likedClass}" data-id="${emoji.id}" onclick="event.stopPropagation()">
-                    <span class="like-icon">${heartIcon}</span> <span class="like-count">${emoji.likes || 0}</span>
-                </button>
+            <div class="emoji-card-row row-info">
+                <div class="emoji-name">${escapeHtml(emoji.name)}</div>
+                <div class="emoji-meta">
+                    <span class="emoji-creator">${author}</span>
+                    <span class="emoji-counter">📋 <span class="copy-count" data-id="${emoji.id}">${emoji.downloads || 0}</span></span>
+                </div>
+            </div>
+            <div class="emoji-card-row row-tags">
+                ${tagsHtml}
+            </div>
+            <div class="emoji-card-row row-actions">
+                <div class="card-actions">
+                    <button class="btn btn-secondary btn-copy" data-symbol="${escapeAttr(emoji.symbol)}" data-id="${emoji.id}" onclick="event.stopPropagation()">📋 Copy</button>
+                    <button class="btn btn-ghost btn-like${likedClass}" data-id="${emoji.id}" onclick="event.stopPropagation()">
+                        <span class="like-icon">${heartIcon}</span> <span class="like-count">${emoji.likes || 0}</span>
+                    </button>
+                </div>
             </div>
         </div>
     `;

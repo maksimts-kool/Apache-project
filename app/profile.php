@@ -120,9 +120,10 @@ if ($is_owner) {
                 for (let i = 0; i < 6; i++) {
                     grid.innerHTML += `
                         <div class="skeleton-card">
-                            <div class="skeleton-preview"></div>
-                            <div class="skeleton-line"></div>
-                            <div class="skeleton-line short"></div>
+                            <div class="skeleton-row row-1"><div class="skeleton-preview"></div></div>
+                            <div class="skeleton-row row-2"><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
+                            <div class="skeleton-row row-3"><div class="skeleton-line"></div></div>
+                            <div class="skeleton-row row-4"><div class="skeleton-line"></div><div class="skeleton-line"></div></div>
                         </div>
                     `;
                 }
