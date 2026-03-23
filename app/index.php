@@ -2,20 +2,24 @@
 header('Content-Type: text/html; charset=utf-8');
 session_start();
 require_once 'db.php';
+require_once 'categories.php';
 
 // Fetch the total number of emojis for the live stat
 $stmt = $pdo->query("SELECT COUNT(*) as total FROM emojis");
 $row = $stmt->fetch();
 $total_emojis = $row['total'] ?? 0;
+$categories = getAllCategories($pdo);
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KawaiiEmoji — Create & Share Text Emojis</title>
     <link rel="stylesheet" href="/assets/css/style.css">
 </head>
+
 <body>
     <header class="header">
         <div class="header-inner">
@@ -29,12 +33,12 @@ $total_emojis = $row['total'] ?? 0;
             </div>
             <div class="header-actions">
                 <?php if (isset($_SESSION['user_id'])): ?>
-                    <a href="/profile.php?id=<?= $_SESSION['user_id'] ?>" class="btn btn-ghost btn-sm">👤 Profile</a>
-                    <a href="/upload.php" class="btn btn-primary btn-sm">Upload ✨</a>
-                    <a href="/api/auth.php?action=logout" class="btn btn-ghost btn-sm">Logout</a>
+                <a href="/profile.php?id=<?= $_SESSION['user_id'] ?>" class="btn btn-ghost btn-sm">👤 Profile</a>
+                <a href="/upload.php" class="btn btn-primary btn-sm">Upload ✨</a>
+                <a href="/api/auth.php?action=logout" class="btn btn-ghost btn-sm">Logout</a>
                 <?php else: ?>
-                    <a href="/login.php" class="btn btn-ghost btn-sm">Log in</a>
-                    <a href="/register.php" class="btn btn-primary btn-sm">Register</a>
+                <a href="/login.php" class="btn btn-ghost btn-sm">Log in</a>
+                <a href="/register.php" class="btn btn-primary btn-sm">Register</a>
                 <?php endif; ?>
             </div>
         </div>
@@ -43,10 +47,11 @@ $total_emojis = $row['total'] ?? 0;
     <nav class="category-nav">
         <div class="category-nav-inner">
             <button class="category-tab active" data-category="">✨ All</button>
-            <button class="category-tab" data-category="kawaii">🎌 Kawaii</button>
-            <button class="category-tab" data-category="funny">😂 Funny</button>
-            <button class="category-tab" data-category="sad">😭 Sad</button>
-            <button class="category-tab" data-category="love">💖 Love</button>
+            <?php foreach ($categories as $category): ?>
+            <button class="category-tab" data-category="<?= htmlspecialchars($category['slug'], ENT_QUOTES) ?>">
+                <?= htmlspecialchars(buildCategoryLabel($category)) ?>
+            </button>
+            <?php endforeach; ?>
         </div>
     </nav>
 
@@ -60,7 +65,8 @@ $total_emojis = $row['total'] ?? 0;
         </div>
         <div class="hero-content">
             <h1>Create. Share. Kawaii.</h1>
-            <p>Welcome to KawaiiEmoji, the cutest collection of text-based kaomoji and unicode smiles. Join our community to share your own creations!</p>
+            <p>Welcome to KawaiiEmoji, the cutest collection of text-based kaomoji and unicode smiles. Join our
+                community to share your own creations!</p>
             <div class="hero-buttons">
                 <a href="/register.php" class="btn btn-primary">Start for free</a>
                 <a href="#gallery" class="btn btn-secondary">Browse Emojis</a>
@@ -108,17 +114,23 @@ $total_emojis = $row['total'] ?? 0;
 
     <script src="/assets/js/app.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const q = urlParams.get('q');
-            if (q) {
-                const searchInput = document.getElementById('search-input');
-                if (searchInput) searchInput.value = q;
-                loadEmojis({ q, sort: 'popular' });
-            } else {
-                loadEmojis({ sort: 'popular' });
-            }
-        });
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const q = urlParams.get('q');
+        if (q) {
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) searchInput.value = q;
+            loadEmojis({
+                q,
+                sort: 'popular'
+            });
+        } else {
+            loadEmojis({
+                sort: 'popular'
+            });
+        }
+    });
     </script>
 </body>
+
 </html>

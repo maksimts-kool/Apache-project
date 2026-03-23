@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initCopyButtons();
     initLikeButtons();
     initCategoryTabs();
+    initCategoryCreator();
     initSearchBar();
     initPasswordToggle();
     initBackToTop();
@@ -193,6 +194,133 @@ function initCategoryTabs() {
             const category = tab.dataset.category || '';
             loadEmojis({ category });
         });
+    });
+}
+
+function initCategoryCreator() {
+    const modal = document.getElementById('category-modal');
+    const openBtn = document.getElementById('open-category-modal');
+    const form = document.getElementById('category-create-form');
+    const select = document.getElementById('category');
+
+    if (!modal || !openBtn || !form || !select) return;
+
+    const closeButtons = modal.querySelectorAll('[data-close-category-modal]');
+    const emojiInput = document.getElementById('category-emoji');
+    const nameInput = document.getElementById('category-name');
+    const submitBtn = document.getElementById('create-category-btn');
+    const emojiOptions = Array.from(modal.querySelectorAll('[data-category-emoji]'));
+
+    let closeTimer = null;
+
+    const setActiveEmoji = (value) => {
+        if (emojiInput) {
+            emojiInput.value = value;
+        }
+
+        emojiOptions.forEach(option => {
+            const isActive = option.dataset.categoryEmoji === value;
+            option.classList.toggle('active', isActive);
+            option.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+    };
+
+    const closeModal = () => {
+        modal.classList.remove('visible');
+        document.body.classList.remove('modal-open');
+
+        if (closeTimer) clearTimeout(closeTimer);
+        closeTimer = setTimeout(() => {
+            modal.hidden = true;
+            form.reset();
+            setActiveEmoji('');
+        }, 180);
+    };
+
+    const openModal = () => {
+        modal.hidden = false;
+        document.body.classList.add('modal-open');
+        requestAnimationFrame(() => modal.classList.add('visible'));
+        if (emojiOptions[0] && !emojiInput.value) {
+            setActiveEmoji(emojiOptions[0].dataset.categoryEmoji || '');
+        }
+        if (nameInput) nameInput.focus();
+    };
+
+    emojiOptions.forEach(option => {
+        option.addEventListener('click', () => {
+            setActiveEmoji(option.dataset.categoryEmoji || '');
+        });
+    });
+
+    openBtn.addEventListener('click', openModal);
+
+    closeButtons.forEach(btn => {
+        btn.addEventListener('click', closeModal);
+    });
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !modal.hidden) {
+            closeModal();
+        }
+    });
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const emoji = emojiInput ? emojiInput.value.trim() : '';
+        const name = nameInput ? nameInput.value.trim() : '';
+
+        if (!emoji || !name) {
+            showToast('Fill in both fields', 'error');
+            return;
+        }
+
+        const originalText = submitBtn ? submitBtn.textContent : 'Create';
+        if (submitBtn) {
+            submitBtn.textContent = 'Creating...';
+            submitBtn.disabled = true;
+        }
+
+        fetch('/api/categories.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ emoji, name })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success || !data.category) {
+                    showToast(data.message || 'Failed to create category', 'error');
+                    return;
+                }
+
+                const existingOption = Array.from(select.options).find(option => option.value === data.category.slug);
+                if (!existingOption) {
+                    const option = document.createElement('option');
+                    option.value = data.category.slug;
+                    option.textContent = data.category.label || `${data.category.emoji} ${data.category.name}`;
+                    select.appendChild(option);
+                }
+
+                select.value = data.category.slug;
+                showToast('Category created', 'success');
+                closeModal();
+            })
+            .catch(() => {
+                showToast('Failed to create category', 'error');
+            })
+            .finally(() => {
+                if (submitBtn) {
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                }
+            });
     });
 }
 
@@ -385,7 +513,7 @@ function initTagClicks() {
             e.stopPropagation();
             const tag = pill.dataset.tag;
             if (!tag) return; // For detail page tags that don't have data-tag (they are <a>)
-            
+
             const searchInput = document.getElementById('search-input');
             if (searchInput) {
                 searchInput.value = `#${tag}`;

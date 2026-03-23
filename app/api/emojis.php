@@ -2,6 +2,7 @@
 session_start();
 header('Content-Type: application/json; charset=utf-8');
 require_once '../db.php';
+require_once '../categories.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 
@@ -96,6 +97,11 @@ if ($method === 'POST') {
         exit;
     }
 
+    if (!categoryExists($pdo, $category)) {
+        echo json_encode(['success' => false, 'message' => 'Selected category does not exist']);
+        exit;
+    }
+
     // Prevent uploading the same emoji symbol multiple times.
     $dupCheck = $pdo->prepare("SELECT id FROM emojis WHERE symbol = ? LIMIT 1");
     $dupCheck->execute([$symbol]);
@@ -128,6 +134,16 @@ if ($method === 'PUT') {
     $tags = $input['tags'] ?? '';
     $description = $input['description'] ?? '';
     $is_anonymous = isset($input['is_anonymous']) ? (int)$input['is_anonymous'] : 0;
+
+    if (empty($symbol) || empty($name) || empty($category)) {
+        echo json_encode(['success' => false, 'message' => 'Required fields are missing']);
+        exit;
+    }
+
+    if (!categoryExists($pdo, $category)) {
+        echo json_encode(['success' => false, 'message' => 'Selected category does not exist']);
+        exit;
+    }
 
     // Verify ownership
     $stmt = $pdo->prepare("SELECT user_id FROM emojis WHERE id = ?");
