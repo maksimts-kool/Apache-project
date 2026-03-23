@@ -18,8 +18,8 @@ browsable gallery with search, categories, and download counts.
 | 1 | CEO / Team Lead (Scrum Master) | Hussein | Communication, coordination, end-to-end testing |
 | 2 | DB Admin | Timur | Database container, schema, logging |
 | 3 | Webserver Admin | Maksim | Web server container, port mapping, logging |
-| 4 | App Developer | Nikita L | Web application code (PHP) |
-| 5 | DevOps / Monitoring | Nikita G | Docker Compose, networking, volumes, monitoring |
+| 4 | App Developer | Nikita L, Maksim | Web application code (PHP) |
+| 5 | DevOps / Monitoring | Timur | Docker Compose, networking, volumes, monitoring |
 
 ---
 
