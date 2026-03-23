@@ -12,11 +12,33 @@ if ($method === 'POST') {
     if (isset($input['action']) && $input['action'] === 'copy') {
         $id = (int)($input['id'] ?? 0);
         if ($id > 0) {
-            $pdo->prepare("UPDATE emojis SET downloads = downloads + 1 WHERE id = ?")->execute([$id]);
+            $copiedEmojiIds = [];
+            if (isset($_COOKIE['copied_emojis'])) {
+                $decodedCookie = json_decode($_COOKIE['copied_emojis'], true);
+                if (is_array($decodedCookie)) {
+                    $copiedEmojiIds = array_values(array_unique(array_map('intval', $decodedCookie)));
+                }
+            }
+
+            $alreadyCounted = in_array($id, $copiedEmojiIds, true);
+
+            if (!$alreadyCounted) {
+                $pdo->prepare("UPDATE emojis SET downloads = downloads + 1 WHERE id = ?")->execute([$id]);
+                $copiedEmojiIds[] = $id;
+
+                $cookieValue = json_encode(array_values(array_unique($copiedEmojiIds)));
+                setcookie('copied_emojis', $cookieValue, time() + 31536000, '/');
+                $_COOKIE['copied_emojis'] = $cookieValue;
+            }
+
             $stmt = $pdo->prepare("SELECT downloads FROM emojis WHERE id = ?");
             $stmt->execute([$id]);
             $row = $stmt->fetch();
-            echo json_encode(['success' => true, 'downloads' => $row['downloads'] ?? 0]);
+            echo json_encode([
+                'success' => true,
+                'downloads' => $row['downloads'] ?? 0,
+                'counted' => !$alreadyCounted,
+            ]);
         } else {
             echo json_encode(['success' => false, 'message' => 'Invalid id']);
         }
