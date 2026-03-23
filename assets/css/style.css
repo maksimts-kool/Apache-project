@@ -1213,6 +1213,7 @@ span.tag {
     display: flex;
     gap: 12px;
     justify-content: center;
+    flex-wrap: wrap;
 }
 
 /* ---- Toast Notifications ---- */

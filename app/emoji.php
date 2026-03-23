@@ -68,12 +68,6 @@ if (isset($_SESSION['user_id'])) {
 
     <main class="emoji-detail">
         <div class="emoji-detail-card">
-            <?php if ($is_owner): ?>
-            <div style="text-align: right; margin-bottom: -30px;">
-                <a href="/upload.php?id=<?= $emoji['id'] ?>" class="btn btn-secondary btn-sm">✏️ Edit</a>
-            </div>
-            <?php endif; ?>
-
             <div class="emoji-large"><?= htmlspecialchars($emoji['symbol']) ?></div>
 
             <h1><?= htmlspecialchars($emoji['name']) ?></h1>
@@ -109,6 +103,9 @@ if (isset($_SESSION['user_id'])) {
                 <button class="btn btn-secondary btn-like<?= $user_liked ? ' liked' : '' ?>" style="padding: 12px 24px; font-size: 16px;" data-id="<?= $emoji['id'] ?>">
                     <span class="like-icon"><?= $user_liked ? '♥' : '♡' ?></span> <span class="like-count"><?= number_format($emoji['likes']) ?></span>
                 </button>
+                <?php if ($is_owner): ?>
+                <a href="/upload.php?id=<?= $emoji['id'] ?>" class="btn btn-secondary" style="padding: 12px 24px; font-size: 16px;">✏️ Edit</a>
+                <?php endif; ?>
             </div>
         </div>
     </main>
