@@ -7,6 +7,8 @@
  * with fallback values for local development.
  */
 
+require_once __DIR__ . '/logger.php';
+
 $db_host = getenv('DB_HOST') ?: 'kawaii-db';
 $db_name = getenv('MYSQL_DATABASE') ?: 'kawaiiemoji_db';
 $db_user = getenv('MYSQL_USER') ?: 'kawaii_app';
@@ -24,6 +26,11 @@ try {
         ]
     );
 } catch (PDOException $e) {
+    $endpoint = $_SERVER['SCRIPT_NAME'] ?? ($_SERVER['PHP_SELF'] ?? 'unknown');
+    api_log_db_error($endpoint, 'db_connect', $e, [
+        'db_host' => $db_host,
+        'db_name' => $db_name,
+    ]);
     http_response_code(500);
     echo json_encode(['error' => 'Database connection failed']);
     error_log('DB Connection Error: ' . $e->getMessage());
