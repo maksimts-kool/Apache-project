@@ -30,9 +30,109 @@ services:
     command: --general-log=1 --general-log-file=/var/log/mysql/mysql.log --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --skip-character-set-client-handshake
     restart: unless-stopped
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    container_name: kawaii-elasticsearch
+    environment:
+      discovery.type: single-node
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+      xpack.security.enabled: "false"
+      xpack.security.enrollment.enabled: "false"
+      cluster.name: kawaiiemoji-logs
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - kawaii-net
+    restart: unless-stopped
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.4
+    container_name: kawaii-kibana
+    environment:
+      SERVER_NAME: kibana
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+      XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY: kawaiiemoji-logging-stack-key-123456
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - kawaii-net
+    restart: unless-stopped
+
+  apache-log-shipper:
+    image: python:3.12-slim
+    container_name: kawaii-apache-log-shipper
+    working_dir: /workspace
+    command: ["python", "/workspace/scripts/send_apache_logs.py"]
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      INDEX_NAME: server-logs
+      LOG_FILES: /workspace/logs/apache_access.log,/workspace/logs/apache_error.log
+      STATE_FILE: /state/apache-logs.json
+      START_POSITION: beginning
+      POLL_INTERVAL: "3"
+      PROJECT_NAME: kawaiiemoji
+    volumes:
+      - ./scripts:/workspace/scripts:ro
+      - ./logs:/workspace/logs:ro
+      - apache_shipper_state:/state
+    depends_on:
+      - elasticsearch
+      - webserver
+    networks:
+      - kawaii-net
+    restart: unless-stopped
+
+  mysql-log-shipper:
+    image: python:3.12-slim
+    container_name: kawaii-mysql-log-shipper
+    working_dir: /workspace
+    command: ["python", "/workspace/scripts/send_mysql_logs.py"]
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      INDEX_NAME: db-logs
+      LOG_FILES: /workspace/logs/mysql.log
+      STATE_FILE: /state/mysql-logs.json
+      START_POSITION: beginning
+      POLL_INTERVAL: "3"
+      PROJECT_NAME: kawaiiemoji
+    volumes:
+      - ./scripts:/workspace/scripts:ro
+      - ./logs:/workspace/logs:ro
+      - mysql_shipper_state:/state
+    depends_on:
+      - elasticsearch
+      - db
+    networks:
+      - kawaii-net
+    restart: unless-stopped
+
+  kibana-setup:
+    image: python:3.12-slim
+    container_name: kawaii-kibana-setup
+    working_dir: /workspace
+    command: ["python", "/workspace/scripts/setup_kibana.py"]
+    environment:
+      KIBANA_URL: http://kibana:5601
+      DASHBOARD_FILE: /workspace/kibana/kawaiiemoji-dashboard.ndjson
+    volumes:
+      - ./scripts:/workspace/scripts:ro
+      - ./kibana:/workspace/kibana:ro
+    depends_on:
+      - kibana
+    networks:
+      - kawaii-net
+    restart: "no"
+
 networks:
   kawaii-net:
     driver: bridge
 
 volumes:
   mysql_data:
+  elasticsearch_data:
+  apache_shipper_state:
+  mysql_shipper_state:
