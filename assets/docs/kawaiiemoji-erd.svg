@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">KawaiiEmoji database ERD</title>
+  <desc id="desc">Entity relationship diagram for users, emoji categories, emojis, and emoji likes tables.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#374151"/>
+    </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#1f2937" flood-opacity="0.14"/>
+    </filter>
+    <style>
+      .bg { fill: #f7f8fb; }
+      .title { font: 800 34px Arial, sans-serif; fill: #111827; }
+      .subtitle { font: 16px Arial, sans-serif; fill: #526071; }
+      .table { fill: #ffffff; stroke: #cbd5e1; stroke-width: 2; rx: 16; filter: url(#shadow); }
+      .head-users { fill: #dff5ec; }
+      .head-cat { fill: #e7f0ff; }
+      .head-emoji { fill: #fff1d6; }
+      .head-like { fill: #f3e8ff; }
+      .table-title { font: 700 23px Arial, sans-serif; fill: #111827; }
+      .field { font: 16px Arial, sans-serif; fill: #374151; }
+      .key { font: 700 16px Arial, sans-serif; fill: #111827; }
+      .line { fill: none; stroke: #374151; stroke-width: 3; marker-end: url(#arrow); }
+      .note { font: 700 14px Arial, sans-serif; fill: #334155; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1280" height="720"/>
+  <text x="56" y="62" class="title">KawaiiEmoji andmebaasi ERD</text>
+  <text x="56" y="92" class="subtitle">Skeem kirjeldab kasutajaid, kategooriaid, emotikone ja meeldimiste seost.</text>
+
+  <rect x="70" y="145" width="300" height="250" class="table"/>
+  <path d="M 70 161 Q 70 145 86 145 H 354 Q 370 145 370 161 V 205 H 70 Z" class="head-users"/>
+  <text x="105" y="183" class="table-title">users</text>
+  <text x="105" y="235" class="key">PK id INT</text>
+  <text x="105" y="265" class="field">username VARCHAR(50)</text>
+  <text x="105" y="295" class="field">email VARCHAR(100)</text>
+  <text x="105" y="325" class="field">password VARCHAR(255)</text>
+  <text x="105" y="355" class="field">created_at TIMESTAMP</text>
+
+  <rect x="70" y="455" width="330" height="210" class="table"/>
+  <path d="M 70 471 Q 70 455 86 455 H 384 Q 400 455 400 471 V 515 H 70 Z" class="head-cat"/>
+  <text x="105" y="493" class="table-title">emoji_categories</text>
+  <text x="105" y="545" class="key">PK slug VARCHAR(80)</text>
+  <text x="105" y="575" class="field">emoji VARCHAR(16)</text>
+  <text x="105" y="605" class="field">name VARCHAR(50)</text>
+  <text x="105" y="635" class="field">created_by INT NULL FK</text>
+
+  <rect x="540" y="145" width="330" height="340" class="table"/>
+  <path d="M 540 161 Q 540 145 556 145 H 854 Q 870 145 870 161 V 205 H 540 Z" class="head-emoji"/>
+  <text x="575" y="183" class="table-title">emojis</text>
+  <text x="575" y="235" class="key">PK id INT</text>
+  <text x="575" y="265" class="field">symbol TEXT</text>
+  <text x="575" y="295" class="field">name VARCHAR(100)</text>
+  <text x="575" y="325" class="field">category VARCHAR(50)</text>
+  <text x="575" y="355" class="field">tags VARCHAR(255)</text>
+  <text x="575" y="385" class="field">is_anonymous TINYINT(1)</text>
+  <text x="575" y="415" class="field">user_id INT NULL FK</text>
+  <text x="575" y="445" class="field">downloads, likes, created_at</text>
+
+  <rect x="970" y="245" width="245" height="180" class="table"/>
+  <path d="M 970 261 Q 970 245 986 245 H 1199 Q 1215 245 1215 261 V 305 H 970 Z" class="head-like"/>
+  <text x="1005" y="283" class="table-title">emoji_likes</text>
+  <text x="1005" y="335" class="key">PK user_id INT FK</text>
+  <text x="1005" y="365" class="key">PK emoji_id INT FK</text>
+  <text x="1005" y="395" class="field">many-to-many link</text>
+
+  <path class="line" d="M 370 270 C 445 270 465 415 540 415"/>
+  <text x="410" y="300" class="note">users.id -> emojis.user_id</text>
+
+  <path class="line" d="M 370 560 C 455 560 455 365 540 325"/>
+  <text x="395" y="535" class="note">category slug/name -> emojis.category</text>
+
+  <path class="line" d="M 370 350 C 415 420 430 620 400 635"/>
+  <text x="405" y="640" class="note">users.id -> categories.created_by</text>
+
+  <path class="line" d="M 870 335 C 905 335 935 335 970 335"/>
+  <text x="878" y="318" class="note">emojis.id -> likes.emoji_id</text>
+
+  <path class="line" d="M 370 235 C 610 105 930 185 1005 335"/>
+  <text x="770" y="140" class="note">users.id -> likes.user_id</text>
+</svg>
